@@ -4,6 +4,21 @@ from scipy.fftpack import fft, ifft, fftshift
 from scipy.constants import pi
 from matplotlib import pyplot as plt
 from numpy import linspace,exp,conj
+import numpy
+import numpy as np 
+from numpy.fft import fft, fftshift
+import math 
+
+
+########## Gaussian Noise #############
+mean = 0
+std = 1 
+num_samples = 400 
+GWN = numpy.random.normal(mean, std, size=num_samples)
+
+
+##########################################
+
 t = linspace(-2.5e-6, 2.5e-6, 400) # Pulsewidth (s)
 R=4e2                #Range
 c = 3e8                # speed of EM wave [m/s] 
@@ -18,6 +33,18 @@ sr=exp(1j*2*pi*(fc*(t-t0)+Kchirp/2*(t-t0)**2)) # recieved signal
 Hf = fft(conj(st))
 Si = fft(sr)
 so = fftshift(ifft(Si * Hf))
+
+####### Adding White Noise to Signal ####
+srr = sr.real + GWN
+
+########### Hanning Window ###########
+new = abs(srr)
+NNN = len(abs(srr))
+window = [0]*NNN
+for i in range(NNN):
+    window[i] =  0.5*(1 - math.cos(2*3.14*(new[i]/NNN)))
+
+    
 # Plot the matched filter output
 plt.figure(1)
 plt.plot(t, abs(so))
@@ -32,7 +59,7 @@ plt.xlabel('Time Delay (s)')
 plt.ylabel('real part')
 plt.show()
 plt.figure(1)
-plt.plot(t, sr.real)
+plt.plot(t, srr)
 plt.title('recieved signal')
 plt.xlabel('Time Delay (s)')
 plt.ylabel('real part')
